@@ -120,4 +120,20 @@ defmodule TransformTest do
     trans = %{ Atom => replace_x }
     assert Transform.transform(foo, trans) == bar
   end 
+
+  test "implement scrub of empty values from map" do
+    foo = %{ :a => nil, :b => "", :c => "a"}
+    replace_empty = fn(string, _d) -> if( string == "", do: nil , else: string) end 
+    replace_nil = fn(map, _depth) ->  for {k, v} <- map, v != nil , into: %{}, do: {k, v} end
+    trans = %{ BitString => replace_empty, Map => replace_nil}
+
+    assert Transform.transform(foo, trans) == %{:c => "a"}
+
+  end 
+
+  test "depth check in nested lists" do 
+    foo = [[[1,2,3],[2,3]]]
+    trans = %{ List => fn(list, depth) -> if ( depth > 1 ), do: :list_too_deep , else: list end } 
+    assert Transform.transform(foo, trans) == [[:list_too_deep,:list_too_deep]]
+  end 
 end
