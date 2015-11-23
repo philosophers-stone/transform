@@ -3,12 +3,12 @@ defmodule TransformTest do
   use ExUnit.Case
 
   test "identity is the default atom" do 
-  	assert Transform.transform(:foo,%{}) == :foo 
+    assert Transform.transform(:foo,%{}) == :foo 
   end 
 
   test "convert to string" do 
     trans = %{ Atom => fn(x, _d) -> Atom.to_string(x) end}
-  	assert Transform.transform(:foo,trans) == "foo"
+    assert Transform.transform(:foo,trans) == "foo"
   end 
 
   test "identity is the default string" do 
