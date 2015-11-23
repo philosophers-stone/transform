@@ -5,10 +5,10 @@
 ## Documentation 
 
 The `Transform` protocol will convert any Elixir data structure
-using a given transform into a new data structure. 
+using a given transform map into a new data structure. 
 
 The `transform/3` function takes the data structure and 
-a map of transformation functions and a depth level. It will
+a map of transformation functions and a depth level. It
 then does a depth-first recursion through the structure, 
 applying the tranformation functions for all 
 data types found in the data structure. 
@@ -18,7 +18,12 @@ anonymous functions as values. The anonymous
 functions have the data item and recursion depth
 as inputs and can return anything. 
 
-	transformer = %{ Atom => fn(atom, depth) -> atom end }
+## Examples
+
+	iex> transformer = %{ Atom => fn(atom, _depth) -> Atom.to_string(atom) end }
+	iex> Transform.transform([:a, :b, :c], transformer)
+	["a","b","c"]
+
 
 
 ## Installation
