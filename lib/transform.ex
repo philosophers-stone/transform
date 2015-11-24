@@ -29,7 +29,8 @@ end
 defimpl Transform, for: Atom do 
 
   def transform(atom, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Atom, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, Atom, fn(x, _d) -> x end )
     trans.(atom, depth)
   end 
 
@@ -38,7 +39,8 @@ end
 defimpl Transform, for: BitString do
 
   def transform(bitstring, function_map, depth \\ []) do 
-    trans = Map.get(function_map, BitString, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, BitString, fn(x, _d) -> x end )
     trans.(bitstring, depth)
   end 
 
@@ -47,7 +49,8 @@ end
 defimpl Transform, for: Integer do
 
   def transform(integer, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Integer, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, Integer, fn(x, _d) -> x end )
     trans.(integer, depth)
   end 
 
@@ -56,7 +59,8 @@ end
 defimpl Transform, for: Float do
 
   def transform(float, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Float, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, Float, fn(x, _d) -> x end )
     trans.(float, depth)
   end 
 
@@ -65,21 +69,22 @@ end
 defimpl Transform, for: List do
 
   def transform(list, function_map, depth \\0 ) do 
+    potion = Transform.Potion.brew(function_map, depth)
     case Keyword.keyword?(list) do 
-      true -> keyword_transform(list, function_map, depth)
-      _ -> list_transform(list, function_map, depth)
+      true -> keyword_transform(list, potion, depth)
+      _ -> list_transform(list, potion, depth)
     end
   end 
 
-  defp list_transform(list, function_map, depth) do
-    new_list =  Enum.map(list, fn(l) -> Transform.transform(l, function_map, [List | depth]) end)
-    trans =  Map.get(function_map, List, fn(x, _d) -> x end )
+  defp list_transform(list, potion, depth) do
+    new_list =  Enum.map(list, fn(l) -> Transform.transform(l, potion, [List | depth]) end)
+    trans =  Map.get(potion, List, fn(x, _d) -> x end )
     trans.(new_list, depth)
   end
 
-  defp keyword_transform(klist, function_map, depth) do
-    new_klist = Enum.map(klist, fn({key, value}) -> {key, Transform.transform(value, function_map,[Keyword | depth]) } end)
-    trans = Map.get(function_map, Keyword, fn(x, _d) -> x end )
+  defp keyword_transform(klist, potion, depth) do
+    new_klist = Enum.map(klist, fn({key, value}) -> {key, Transform.transform(value, potion,[Keyword | depth]) } end)
+    trans = Map.get(potion, Keyword, fn(x, _d) -> x end )
     trans.(new_klist, depth)
   end 
 
@@ -88,12 +93,13 @@ end
 defimpl Transform, for: Tuple do
 
   def transform(tuple, function_map, depth \\ []) do 
+    potion = Transform.Potion.brew(function_map, depth)
     new_tuple = tuple 
       |> Tuple.to_list
-      |> Enum.map(fn(x) -> Transform.transform(x, function_map, [Tuple | depth] ) end)
+      |> Enum.map(fn(x) -> Transform.transform(x, potion, [Tuple | depth] ) end)
       |> Enum.to_list
       |> List.to_tuple
-    trans = Map.get(function_map, Tuple, fn(x, _d) -> x end )
+    trans = Map.get(potion, Tuple, fn(x, _d) -> x end )
     trans.(new_tuple, depth)
   end 
 
@@ -102,8 +108,9 @@ end
 defimpl Transform, for: Map do
 
   def transform(map, function_map, depth \\0 ) do 
-    new_map =  for {key, val} <- map, into: %{}, do: {key, Transform.transform(val, function_map, [Map | depth])}
-    trans = Map.get(function_map, Map, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    new_map =  for {key, val} <- map, into: %{}, do: {key, Transform.transform(val, potion, [Map | depth])}
+    trans = Map.get(potion, Map, fn(x, _d) -> x end )
     trans.(new_map, depth)
   end 
 
@@ -111,8 +118,9 @@ end
 
 defimpl Transform, for: Regex do
 
-  def transform(regex, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Regex, fn(x, _d) -> x end )
+  def transform(regex, function_map, depth \\ [] ) do
+    potion = Transform.Potion.brew(function_map, depth) 
+    trans = Map.get(potion, Regex, fn(x, _d) -> x end )
     trans.(regex, depth)
   end 
 
@@ -121,7 +129,8 @@ end
 defimpl Transform, for: Function do
 
   def transform(function, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Function, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, Function, fn(x, _d) -> x end )
     trans.(function, depth)
   end 
 
@@ -130,7 +139,8 @@ end
 defimpl Transform, for: PID do
 
   def transform(pid, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, PID, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, PID, fn(x, _d) -> x end )
     trans.(pid, depth)
   end 
 
@@ -139,7 +149,8 @@ end
 defimpl Transform, for: Port do
 
   def transform(port, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Port, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, Port, fn(x, _d) -> x end )
     trans.(port, depth)
   end 
 
@@ -148,7 +159,8 @@ end
 defimpl Transform, for: Reference do
 
   def transform(reference, function_map, depth \\ [] ) do 
-    trans = Map.get(function_map, Reference, fn(x, _d) -> x end )
+    potion = Transform.Potion.brew(function_map, depth)
+    trans = Map.get(potion, Reference, fn(x, _d) -> x end )
     trans.(reference, depth)
   end 
 
@@ -157,23 +169,24 @@ end
 defimpl Transform, for: Any do
 
   def transform(%{__struct__: struct_name} = map, function_map, depth \\ []) do
+    potion = Transform.Potion.brew(function_map, depth)
     try do 
       struct_name.__struct__
     rescue
-      _ -> Transform.Map.transform(map, function_map, depth)
+      _ -> Transform.Map.transform(map, potion, depth)
     else 
       default_struct ->
         if :maps.keys(default_struct) == :maps.keys(map) do
           data = Map.from_struct(map)
-          # Should we remove any Map transforms from the function map? 
-          new_function_map = Map.delete(function_map, Map)
-          new_data = Transform.Map.transform(data, new_function_map, [struct_name | depth])
+          # remove any Map transforms from the function map
+          new_potion = Map.delete(potion, Map)
+          new_data = Transform.Map.transform(data, new_potion, [struct_name | depth])
           new_struct = struct(struct_name, new_data)
 
-          trans = Map.get(function_map, struct_name, fn(x, _d) -> x end)
+          trans = Map.get(potion, struct_name, fn(x, _d) -> x end)
           trans.(new_struct, depth)
         else
-          Transform.Map.transform(map, function_map, depth)
+          Transform.Map.transform(map, potion, depth)
         end
     end 
 
