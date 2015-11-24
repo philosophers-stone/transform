@@ -15,16 +15,38 @@ data types found in the data structure.
 
 The transform map has data types as keys and 
 anonymous functions as values. The anonymous
-functions have the data item and recursion depth
+functions have the data item and recursion depth list
 as inputs and can return anything. 
 
 ## Examples
 
-	iex> transformer = %{ Atom => fn(atom, _depth) -> Atom.to_string(atom) end }
+	iex> transformer = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
 	iex> Transform.transform([:a, :b, :c], transformer)
 	["a","b","c"]
 
+## Using Transform 
 
+
+The potion map should have Elixir Data types as keys and anonymous functions
+of either fn(x) or fn(x, depth) arity. You can supply nearly any kind of map
+as an argument however, since the `Transform.Potion.brew`function will strip
+out any invalid values. The valid keys are all of the standard Protocol types: 
+
+    [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
+  
+plus the name of any defined Structs (e.g. `Range`)
+
+The depth argument should always be left at the default value when using 
+this protocol. For the anonymous functions in the potion map, they can use
+the depth list to know which kind of data structure contains the current 
+data type. 
+
+For example: Capitalize all strings in the `UserName` struct, normalize all other strings.
+
+    user_potion = %{ BitString => 
+      fn(str, depth) -> if(List.first(depth) == UserName , do: String.capitalize(str) , else: String.downcase(str)) end}
+
+    Transform.transform(data, user_potion) 
 
 ## Installation
 

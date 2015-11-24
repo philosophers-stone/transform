@@ -11,16 +11,59 @@ defprotocol Transform do
 
   The transform map has data types as keys and 
   anonymous functions as values. The anonymous
-  functions have the data item and recursion depth
-  as inputs and can return anything. 
+  functions have the data item and optionaly 
+  a recursion depth list as inputs and can 
+  return anything. These maps of transform functions
+  are refered to as potions.
 
-  transformer = %{ Atom => fn(atom, _depth) -> atom end }
+  For example: Convert all atoms to strings
+
+  atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
+  Transform.transform(data, atom_to_string_potion)
+
+  The potion map should have Elixir Data types as keys and anonymous functions
+  of either fn(x) or fn(x, depth) arity. You can supply nearly any kind of map
+  as an argument however, since the `Transform.Potion.brew`function will strip
+  out any invalid values. The valid keys are all of the standard Protocol types: 
+
+  [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
+  
+  plus the name of any defined Structs (e.g. Range)
+
+  The depth argument should always be left at the default value when using 
+  this protocol. For the anonymous functions in the potion map, they can use
+  the depth list to know which kind of data structure contains the current 
+  data type. 
+
+  For example: Capitalize all strings in the UserName struct, normalize all other strings.
+
+  user_potion = %{ BitString => 
+    fn(str, depth ) -> if ( List.first(depth) == UserName , do: String.capitalize(str) , else: String.downcase(str) )  end  
+
+  Transform.transform(data, user_potion ) 
+
   """
 
   # Handle structs in Any
   @fallback_to_any true
 
-  def transform(structure, function_map, depth \\ [])
+  @doc """
+  uses the given function_map to transform any Elixir data structure.
+  
+  `function_map` should contain keys that correspond to the data types
+  to be transformed. Each key must map to a function that takes that data
+  type and optionally the depth list as arguments. 
+
+  `depth` should always be left at the default value since it is meant for 
+  internal recursion.
+
+   ## Examples
+
+    iex> atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
+    iex> Transform.transform([[:a], :b, {:c, :e}], atom_to_string_potion)
+    [["a"], "b", {"c", "e"}]
+  """
+  def transform(data_structure, function_map, depth \\ [])
 
   # Some other ideas, depth could be a list of transformations rather
   # than a simple count. i.e. [ List, List, Atom ]
