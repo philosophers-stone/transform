@@ -154,7 +154,7 @@ defmodule TransformTest do
 
   test "depth check in nested lists" do 
     foo = [[[1,2,3],[2,3]]]
-    trans = %{ List => fn(list, depth) -> if ( depth > 1 ), do: :list_too_deep , else: list end } 
+    trans = %{ List => fn(list, depth) -> if ( Enum.count(depth) > 1 ), do: :list_too_deep , else: list end } 
     assert Transform.transform(foo, trans) == [[:list_too_deep,:list_too_deep]]
   end 
 end
