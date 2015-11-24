@@ -57,11 +57,12 @@ defprotocol Transform do
   `depth` should always be left at the default value since it is meant for 
   internal recursion.
 
-   ## Examples
+  ## Examples
 
-    iex> atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
-    iex> Transform.transform([[:a], :b, {:c, :e}], atom_to_string_potion)
-    [["a"], "b", {"c", "e"}]
+      iex> atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
+      iex> Transform.transform([[:a], :b, {:c, :e}], atom_to_string_potion)
+      [["a"], "b", {"c", "e"}]
+      
   """
   def transform(data_structure, function_map, depth \\ [])
 
