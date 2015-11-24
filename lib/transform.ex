@@ -64,7 +64,6 @@ end
 
 defimpl Transform, for: List do
 
-  # Could use Keyword.keyword? and Keyword as data value
   def transform(list, function_map, depth \\0 ) do 
     case Keyword.keyword?(list) do 
       true -> keyword_transform(list, function_map, depth)
