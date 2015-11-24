@@ -118,6 +118,12 @@ defmodule TransformTest do
     assert Transform.transform(1..5, %{}) == 1..5
   end 
 
+  test "convert range " do 
+    foo = 1..5 
+    trans = %{Range => fn(_r, _d) -> %Range{first: 2, last: 5} end}
+    assert Transform.transform(1..5, trans) == 2..5
+  end 
+
   test "identity is the default quote do output" do 
     foo = quote do: Enum.map(1..3, fn(x) -> x*x end) |> Enum.sum
     assert Transform.transform(foo, %{}) == foo 
