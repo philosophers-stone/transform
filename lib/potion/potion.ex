@@ -1,52 +1,52 @@
 defmodule Transform.Potion do
-	@moduledoc """
-	This module provides some helper methods for creating maps that 
-	work with the Transform Protocol. 
+  @moduledoc """
+  This module provides some helper methods for creating maps that 
+  work with the Transform Protocol. 
 
-	The methods in this module are public, but are not intended to 
-	be used outside of writing a implementation of the Transform Protocol. 
-	"""
+  The methods in this module are public, but are not intended to 
+  be used outside of writing a implementation of the Transform Protocol. 
+  """
 
-	@doc """
-	brew validates and prepares a map to be used with the `Transform` Protocol. 
+  @doc """
+  brew validates and prepares a map to be used with the `Transform` Protocol. 
 
-	Every key in the map that is an `Atom` that starts with `Elixir.` must 
-	have a function as a value. That function must have either arity 1 or 2
-	and if it is arity 1, it must be wrapped with arity 2 closure. 
+  Every key in the map that is an `Atom` that starts with `Elixir.` must 
+  have a function as a value. That function must have either arity 1 or 2
+  and if it is arity 1, it must be wrapped with arity 2 closure. 
 
-	This validation only occurs at the top of the transformation tree when
-	the depth array is empty. 
-	"""
-	def brew(map, []) when is_map(map) do
-		for {type, func} <- map, validate(type, func) , into: %{} , do: {type, wrap(func, type)}
-	end
+  This validation only occurs at the top of the transformation tree when
+  the depth array is empty. 
+  """
+  def brew(map, []) when is_map(map) do
+    for {type, func} <- map, validate(type, func) , into: %{} , do: {type, wrap(func, type)}
+  end
 
-	def brew(map, depth) when is_map(map) and is_list(depth) do
-		map
-	end
+  def brew(map, depth) when is_map(map) and is_list(depth) do
+    map
+  end
 
-	def brew(map, _depth) do
-		raise ArgumentError, "#{inspect(map)} is not a map, the second argument to transform must be a map"
-	end 
+  def brew(map, _depth) do
+    raise ArgumentError, "#{inspect(map)} is not a map, the second argument to transform must be a map"
+  end 
 
-	defp validate(type, func) when is_function(func) and is_atom(type) do
-		String.starts_with? Atom.to_string(type), "Elixir."
-	end
+  defp validate(type, func) when is_function(func) and is_atom(type) do
+    String.starts_with? Atom.to_string(type), "Elixir."
+  end
 
-	defp validate(_type, _func) do
-		false
-	end 
+  defp validate(_type, _func) do
+    false
+  end 
 
-	defp wrap(func, type) when is_function(func) do
-		case arity(func) do
-			2 -> func
-			1 -> fn(x, _d) -> func.(x) end
-			_ -> raise ArgumentError, "#{inspect(func)} for key #{inspect(type)} in map must have an arity of either 1 or 2"
-		end
-	end
+  defp wrap(func, type) when is_function(func) do
+    case arity(func) do
+      2 -> func
+      1 -> fn(x, _d) -> func.(x) end
+      _ -> raise ArgumentError, "#{inspect(func)} for key #{inspect(type)} in map must have an arity of either 1 or 2"
+    end
+  end
 
-	defp arity(func) do
-		func |> :erlang.fun_info |> Keyword.get(:arity, -1)
-	end 
-	
+  defp arity(func) do
+    func |> :erlang.fun_info |> Keyword.get(:arity, -1)
+  end 
+  
 end
