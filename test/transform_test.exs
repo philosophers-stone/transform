@@ -55,11 +55,26 @@ defmodule TransformTest do
     assert Transform.transform(foo,trans) == {:a, :b, :c}
   end 
 
-
   test "nested list to nested tuple" do 
     foo = [[:a], [:b], [:c]]
     trans = %{ List => fn(x, _d) -> List.to_tuple(x) end }
     assert Transform.transform(foo,trans) == {{:a}, {:b}, {:c}}
+  end 
+
+  test "identity is the default keyword" do 
+    assert Transform.transform([ a: 1, b: 2], %{}) == [a: 1, b: 2]
+  end 
+
+  test "convert keyword values to atom" do
+    foo = [a: "a", b: "b", c: "c"]
+    trans = %{ BitString => fn(x, _d) -> String.to_atom(x) end }
+    assert Transform.transform(foo,trans) == [a: :a, b: :b,c: :c]
+  end 
+
+  test "convert keyword to nested list" do
+    foo = [a: "a", b: "b", c: "c"]
+    trans = %{ Keyword => fn(x, _d) -> for {k, v} <- x, into: [], do: [k, v] end }
+    assert Transform.transform(foo,trans) == [[:a, "a"], [:b, "b"], [:c, "c"]]
   end 
 
   test "identity is the default tuple" do 

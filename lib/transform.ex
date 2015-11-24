@@ -21,6 +21,9 @@ defprotocol Transform do
   @fallback_to_any true
 
   def transform(structure, function_map, depth \\ 0)
+
+  # Some other ideas, depth could be a list of transformations rather
+  # than a simple count. i.e. [ List, List, Atom ]
 end
 
 defimpl Transform, for: Atom do 
@@ -61,10 +64,24 @@ end
 
 defimpl Transform, for: List do
 
+  # Could use Keyword.keyword? and Keyword as data value
   def transform(list, function_map, depth \\0 ) do 
+    case Keyword.keyword?(list) do 
+      true -> keyword_transform(list, function_map, depth)
+      _ -> list_transform(list, function_map, depth)
+    end
+  end 
+
+  defp list_transform(list, function_map, depth) do
     new_list =  Enum.map(list, fn(l) -> Transform.transform(l, function_map, depth + 1) end)
-    trans = Map.get(function_map, List, fn(x, _d) -> x end )
+    trans =  Map.get(function_map, List, fn(x, _d) -> x end )
     trans.(new_list, depth)
+  end
+
+  defp keyword_transform(klist, function_map, depth) do
+    new_klist = Enum.map(klist, fn({key, value}) -> {key, Transform.transform(value, function_map, depth + 1) } end)
+    trans = Map.get(function_map, Keyword, fn(x, _d) -> x end )
+    trans.(new_klist, depth)
   end 
 
 end 
