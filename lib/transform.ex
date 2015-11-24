@@ -102,9 +102,9 @@ end
 defimpl Transform, for: Map do
 
   def transform(map, function_map, depth \\0 ) do 
-    new_Map =  for {key, val} <- map, into: %{}, do: {key, Transform.transform(val, function_map, depth + 1 )}
+    new_map =  for {key, val} <- map, into: %{}, do: {key, Transform.transform(val, function_map, depth + 1 )}
     trans = Map.get(function_map, Map, fn(x, _d) -> x end )
-    trans.(new_Map, depth)
+    trans.(new_map, depth)
   end 
 
 end 
