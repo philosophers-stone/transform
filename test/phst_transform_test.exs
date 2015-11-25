@@ -156,4 +156,10 @@ defmodule PhStTransformTest do
     potion = %{ List => fn(list, depth) -> if ( Enum.count(depth) > 1 ), do: :list_too_deep , else: list end }
     assert PhStTransform.transform(data, potion) == [[:list_too_deep,:list_too_deep]]
   end
+
+  test "struct transform works when Any is not the default" do
+    potion = %{Range => fn(_r, _d) -> %Range{first: 2, last: 5} end,
+               Any => fn(x, _d) -> if(is_map(x), do: inspect(x), else: x) end }
+    assert PhStTransform.transform(1..5, potion) == 2..5
+  end
 end

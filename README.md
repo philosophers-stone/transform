@@ -73,7 +73,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add transform to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:transform, "~> 0.0.1"}]
+          [{:phst_transform, "~> 0.8.0"}]
         end
 
   2. Ensure transform is started before your application:

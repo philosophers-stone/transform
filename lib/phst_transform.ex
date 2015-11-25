@@ -224,8 +224,8 @@ defimpl PhStTransform, for: Any do
       default_struct ->
         if :maps.keys(default_struct) == :maps.keys(map) do
           data = Map.from_struct(map)
-          # remove any Map transforms from the function map
-          new_potion = Map.delete(potion, Map)
+          # replace any Map transforms from the potion with the identity map
+          new_potion = Map.put(potion, Map, fn(x, _d) -> x end)
           new_data = PhStTransform.Map.transform(data, new_potion, [struct_name | depth])
           new_struct = struct(struct_name, new_data)
 
