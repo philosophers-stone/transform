@@ -53,6 +53,19 @@ For example: Capitalize all strings in the `UserName` struct, normalize all othe
 
     Transform.transform(data, user_potion)
 
+## Limitations
+
+Clearly there are some transformations that would be difficult or impossible
+to duplicate in a single potion. The tranformations can be easily composed,
+but this has a performance cost in that each `tranform` iterates through
+the entire data structure.
+
+Also, since transforms are implemented as a Protocol, the transforms will be
+relatively slow during development since the Protocol is not consolidated
+for development compilations. Protocol consolidation will improve the speed
+in production, but like any general purpose tool, this module emphasizes
+utility over performance.
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
