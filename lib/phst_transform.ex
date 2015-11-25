@@ -15,19 +15,19 @@ defprotocol PhStTransform do
   return anything. These maps of transform functions
   are refered to as potions.
 
-  For example: Convert all atoms to strings
+  ## Example: Convert all atoms to strings
 
-  atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
-  PhStTransform.transform(data, atom_to_string_potion)
+      atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
+      PhStTransform.transform(data, atom_to_string_potion)
 
   The potion map should have Elixir Data types as keys and anonymous functions
-  of either fn(x) or fn(x, depth) arity. You can supply nearly any kind of map
+  of either `fn(x)` or `fn(x, depth)` arity. You can supply nearly any kind of map
   as an argument however, since the `PhStTransform.Potion.brew`function will strip
   out any invalid values. The valid keys are all of the standard Protocol types:
 
-  [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
+      [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
 
-  plus `Keyword` and the name of any defined Structs (e.g. Range)
+  plus `Keyword` and the name of any defined Structs (e.g. `Range`)
 
   There is also the special type `Any`, this is the default function applied
   when there is no function for the type listed in the potion. By default
@@ -39,12 +39,12 @@ defprotocol PhStTransform do
   the depth list to know which kind of data structure contains the current
   data type.
 
-  For example: Capitalize all strings in the UserName struct, normalize all other strings.
+  ## Example: Capitalize all strings in the UserName struct, normalize all other strings.
 
-  user_potion = %{ BitString => fn(str, depth) ->
-    if(List.first(depth) == UserName), do: String.capitalize(str), else: String.downcase(str)) end}
+      user_potion = %{ BitString => fn(str, depth) ->
+        if(List.first(depth) == UserName), do: String.capitalize(str), else: String.downcase(str)) end}
 
-  PhStTransform.transform(data, user_potion)
+      PhStTransform.transform(data, user_potion)
 
   """
 

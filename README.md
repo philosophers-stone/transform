@@ -1,6 +1,6 @@
 # PhStTransform
 
-**A Protocol Implementation for PhStTransforming arbitrary Elixir data Structures**
+**A Protocol Implementation for transforming arbitrary Elixir data Structures**
 
 ## Documentation
 
@@ -20,15 +20,15 @@ and functions are referred to as potions.
 
 ## Examples
 
-	  iex> potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
+    iex> potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
     iex> data = %{:a => [a: :a], :b => {:c, :d}, "f" => [:e, :g]}
-	  iex> PhStTransform.transform(data, potion)
-	  %{:a => [a: "a"], :b => {"c", "d"}, "f" => ["e", "g"]}
+    iex> PhStTransform.transform(data, potion)
+    %{:a => [a: "a"], :b => {"c", "d"}, "f" => ["e", "g"]}
 
 ## Using PhStTransform
 
 The potion map should have Elixir Data types as keys and anonymous functions
-of either fn(x) or fn(x, depth) arity. You can supply nearly any kind of map
+of either `fn(x)` or `fn(x, depth)` arity. You can supply nearly any kind of map
 as an argument however, since the `PhStTransform.Potion.brew`function will strip
 out any invalid values. The valid keys are all of the standard Protocol types:
 
@@ -42,7 +42,7 @@ this is set to the identity function `fn(x, _d) -> x end`, but can be overridden
 in the initial map.
 
 The depth argument should always be left at the default value when using
-this protocol. For the anonymous functions in the potion map, they can use
+this protocol. The anonymous functions in the potion map can use
 the depth list to know which kind of data structure contains the current
 data type.
 
@@ -79,5 +79,5 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   2. Ensure transform is started before your application:
 
         def application do
-          [applications: [:transform]]
+          [applications: [:phst_transform]]
         end
