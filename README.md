@@ -1,10 +1,10 @@
-# Transform
+# PhStTransform
 
-**A Protocol Implementation for Transforming arbitrary Elixir data Structures**
+**A Protocol Implementation for PhStTransforming arbitrary Elixir data Structures**
 
 ## Documentation
 
-The `Transform` protocol will convert any Elixir data structure
+The `PhStTransform` protocol will convert any Elixir data structure
 using a given transform map into a new data structure.
 
 The `transform/3` function takes the data structure and
@@ -22,14 +22,14 @@ and functions are referred to as potions.
 
 	  iex> potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
     iex> data = %{:a => [a: :a], :b => {:c, :d}, "f" => [:e, :g]}
-	  iex> Transform.transform(data, potion)
+	  iex> PhStTransform.transform(data, potion)
 	  %{:a => [a: "a"], :b => {"c", "d"}, "f" => ["e", "g"]}
 
-## Using Transform
+## Using PhStTransform
 
 The potion map should have Elixir Data types as keys and anonymous functions
 of either fn(x) or fn(x, depth) arity. You can supply nearly any kind of map
-as an argument however, since the `Transform.Potion.brew`function will strip
+as an argument however, since the `PhStTransform.Potion.brew`function will strip
 out any invalid values. The valid keys are all of the standard Protocol types:
 
     [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
@@ -51,7 +51,7 @@ For example: Capitalize all strings in the `UserName` struct, normalize all othe
     user_potion = %{ BitString =>
       fn(str, depth) -> if(List.first(depth) == UserName , do: String.capitalize(str) , else: String.downcase(str)) end}
 
-    Transform.transform(data, user_potion)
+    PhStTransform.transform(data, user_potion)
 
 ## Limitations
 

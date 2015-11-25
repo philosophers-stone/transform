@@ -1,14 +1,14 @@
-defmodule Transform.Potion do
+defmodule PhStTransform.Potion do
   @moduledoc """
   This module provides some helper methods for creating maps that
-  work with the `Transform` Protocol.
+  work with the `PhStTransform` Protocol.
 
   The methods in this module that are public are not intended to
-  be used outside of writing a implementation of the `Transform` Protocol.
+  be used outside of writing a implementation of the `PhStTransform` Protocol.
   """
 
   @doc """
-  brew validates and prepares a map to be used with the `Transform` Protocol.
+  brew validates and prepares a map to be used with the `PhStTransform` Protocol.
 
   Every key in the map that is an `Atom` and that starts with `Elixir.` must
   have a function as a value. That function must have either arity 1 or 2

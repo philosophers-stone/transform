@@ -1,4 +1,4 @@
-defmodule Transform.Mixfile do
+defmodule PhStTransform.Mixfile do
   use Mix.Project
 
   def project do

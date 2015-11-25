@@ -1,6 +1,6 @@
-defprotocol Transform do
+defprotocol PhStTransform do
   @moduledoc """
-  The `Transform` protocol will convert any Elixir data structure
+  The `PhStTransform` protocol will convert any Elixir data structure
   using a given transform into a new data structure.
 
   The `transform/3` function takes the data structure and
@@ -18,11 +18,11 @@ defprotocol Transform do
   For example: Convert all atoms to strings
 
   atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
-  Transform.transform(data, atom_to_string_potion)
+  PhStTransform.transform(data, atom_to_string_potion)
 
   The potion map should have Elixir Data types as keys and anonymous functions
   of either fn(x) or fn(x, depth) arity. You can supply nearly any kind of map
-  as an argument however, since the `Transform.Potion.brew`function will strip
+  as an argument however, since the `PhStTransform.Potion.brew`function will strip
   out any invalid values. The valid keys are all of the standard Protocol types:
 
   [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
@@ -44,7 +44,7 @@ defprotocol Transform do
   user_potion = %{ BitString => fn(str, depth) ->
     if(List.first(depth) == UserName), do: String.capitalize(str), else: String.downcase(str)) end}
 
-  Transform.transform(data, user_potion)
+  PhStTransform.transform(data, user_potion)
 
   """
 
@@ -64,7 +64,7 @@ defprotocol Transform do
   ## Examples
 
       iex> atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
-      iex> Transform.transform([[:a], :b, {:c, :e}], atom_to_string_potion)
+      iex> PhStTransform.transform([[:a], :b, {:c, :e}], atom_to_string_potion)
       [["a"], "b", {"c", "e"}]
 
   """
@@ -72,50 +72,50 @@ defprotocol Transform do
 
 end
 
-defimpl Transform, for: Atom do
+defimpl PhStTransform, for: Atom do
 
   def transform(atom, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Atom, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Atom, potion)
     trans.(atom, depth)
   end
 
 end
 
-defimpl Transform, for: BitString do
+defimpl PhStTransform, for: BitString do
 
   def transform(bitstring, function_map, depth \\ []) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(BitString, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(BitString, potion)
     trans.(bitstring, depth)
   end
 
 end
 
-defimpl Transform, for: Integer do
+defimpl PhStTransform, for: Integer do
 
   def transform(integer, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Integer, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Integer, potion)
     trans.(integer, depth)
   end
 
 end
 
-defimpl Transform, for: Float do
+defimpl PhStTransform, for: Float do
 
   def transform(float, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Float, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Float, potion)
     trans.(float, depth)
   end
 
 end
 
-defimpl Transform, for: List do
+defimpl PhStTransform, for: List do
 
   def transform(list, function_map, depth \\0 ) do
-    potion = Transform.Potion.brew(function_map, depth)
+    potion = PhStTransform.Potion.brew(function_map, depth)
     case Keyword.keyword?(list) do
       true -> keyword_transform(list, potion, depth)
       _ -> list_transform(list, potion, depth)
@@ -123,116 +123,116 @@ defimpl Transform, for: List do
   end
 
   defp list_transform(list, potion, depth) do
-    new_list =  Enum.map(list, fn(l) -> Transform.transform(l, potion, [List | depth]) end)
-    trans =  Transform.Potion.distill(List, potion)
+    new_list =  Enum.map(list, fn(l) -> PhStTransform.transform(l, potion, [List | depth]) end)
+    trans =  PhStTransform.Potion.distill(List, potion)
     trans.(new_list, depth)
   end
 
   defp keyword_transform(klist, potion, depth) do
-    new_klist = Enum.map(klist, fn({key, value}) -> {key, Transform.transform(value, potion,[Keyword | depth]) } end)
-    trans = Transform.Potion.distill(Keyword, potion)
+    new_klist = Enum.map(klist, fn({key, value}) -> {key, PhStTransform.transform(value, potion,[Keyword | depth]) } end)
+    trans = PhStTransform.Potion.distill(Keyword, potion)
     trans.(new_klist, depth)
   end
 
 end
 
-defimpl Transform, for: Tuple do
+defimpl PhStTransform, for: Tuple do
 
   def transform(tuple, function_map, depth \\ []) do
-    potion = Transform.Potion.brew(function_map, depth)
+    potion = PhStTransform.Potion.brew(function_map, depth)
     new_tuple = tuple
       |> Tuple.to_list
-      |> Enum.map(fn(x) -> Transform.transform(x, potion, [Tuple | depth] ) end)
+      |> Enum.map(fn(x) -> PhStTransform.transform(x, potion, [Tuple | depth] ) end)
       |> Enum.to_list
       |> List.to_tuple
-    trans = Transform.Potion.distill(Tuple, potion)
+    trans = PhStTransform.Potion.distill(Tuple, potion)
     trans.(new_tuple, depth)
   end
 
 end
 
-defimpl Transform, for: Map do
+defimpl PhStTransform, for: Map do
 
   def transform(map, function_map, depth \\0 ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    new_map =  for {key, val} <- map, into: %{}, do: {key, Transform.transform(val, potion, [Map | depth])}
-    trans = Transform.Potion.distill(Map, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    new_map =  for {key, val} <- map, into: %{}, do: {key, PhStTransform.transform(val, potion, [Map | depth])}
+    trans = PhStTransform.Potion.distill(Map, potion)
     trans.(new_map, depth)
   end
 
 end
 
-defimpl Transform, for: Regex do
+defimpl PhStTransform, for: Regex do
 
   def transform(regex, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Regex, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Regex, potion)
     trans.(regex, depth)
   end
 
 end
 
-defimpl Transform, for: Function do
+defimpl PhStTransform, for: Function do
 
   def transform(function, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Function, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Function, potion)
     trans.(function, depth)
   end
 
 end
 
-defimpl Transform, for: PID do
+defimpl PhStTransform, for: PID do
 
   def transform(pid, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(PID, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(PID, potion)
     trans.(pid, depth)
   end
 
 end
 
-defimpl Transform, for: Port do
+defimpl PhStTransform, for: Port do
 
   def transform(port, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Port, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Port, potion)
     trans.(port, depth)
   end
 
 end
 
-defimpl Transform, for: Reference do
+defimpl PhStTransform, for: Reference do
 
   def transform(reference, function_map, depth \\ [] ) do
-    potion = Transform.Potion.brew(function_map, depth)
-    trans = Transform.Potion.distill(Reference, potion)
+    potion = PhStTransform.Potion.brew(function_map, depth)
+    trans = PhStTransform.Potion.distill(Reference, potion)
     trans.(reference, depth)
   end
 
 end
 
-defimpl Transform, for: Any do
+defimpl PhStTransform, for: Any do
 
   def transform(%{__struct__: struct_name} = map, function_map, depth \\ []) do
-    potion = Transform.Potion.brew(function_map, depth)
+    potion = PhStTransform.Potion.brew(function_map, depth)
     try do
       struct_name.__struct__
     rescue
-      _ -> Transform.Map.transform(map, potion, depth)
+      _ -> PhStTransform.Map.transform(map, potion, depth)
     else
       default_struct ->
         if :maps.keys(default_struct) == :maps.keys(map) do
           data = Map.from_struct(map)
           # remove any Map transforms from the function map
           new_potion = Map.delete(potion, Map)
-          new_data = Transform.Map.transform(data, new_potion, [struct_name | depth])
+          new_data = PhStTransform.Map.transform(data, new_potion, [struct_name | depth])
           new_struct = struct(struct_name, new_data)
 
-          trans = Transform.Potion.distill(struct_name, potion)
+          trans = PhStTransform.Potion.distill(struct_name, potion)
           trans.(new_struct, depth)
         else
-          Transform.Map.transform(map, potion, depth)
+          PhStTransform.Map.transform(map, potion, depth)
         end
     end
 
