@@ -9,7 +9,11 @@ defmodule PhStTransform.Mixfile do
      start_permanent: Mix.env == :prod,
      deps: deps,
 
-      # Hex
+     # Ex_doc
+     docs: [logo: "examples/phst_svg.png",
+          extras: ["README.md", "EXAMPLES.md"]],
+
+     # Hex
      package: hex_package,
      description: description
 
@@ -51,6 +55,6 @@ defmodule PhStTransform.Mixfile do
      maintainers: ["Booker C. Bense"],
      licenses: ["Apache 2.0"],
      links: %{"GitHub" => "https://github.com/philosophers-stone/transform",
-              "Docs" => "http://philosophers-stone.github.io/transform/"}]
+              "Docs" => "http://hexdocs.pm/phst_transform/api-reference.html"}]
   end
 end

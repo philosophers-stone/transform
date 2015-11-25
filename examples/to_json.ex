@@ -8,7 +8,7 @@ defmodule ToJson do
                     Tuple => &from_tuple/1 ,
                     Keyword => &from_keyword/1,
                     Map => &from_map/1,
-                    Any => &inspect/1 }
+                    Any => &from_any/1 }
 
     "#{transform(data, json_potion)}"
   end
@@ -35,12 +35,17 @@ defmodule ToJson do
     "{#{Enum.join(inner,",")}}\n"
   end
 
-  defp from_map(%{}) do
-    "{}\n"
-  end
-
   defp from_map(map) do
     inner = for {key, value} <- map, into: [], do: "\"#{inspect(key)}\":#{value}"
     "{#{Enum.join(inner,",")}}\n"
+  end
+
+  defp from_any(map) when is_map(map) do
+    %{__struct__: struct_name} = map
+    "#{from_atom(struct_name)}:#{from_map(Map.from_struct(map))}"
+  end
+
+  defp from_any(any) do
+    inspect(any)
   end
 end
