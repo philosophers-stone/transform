@@ -13,10 +13,10 @@ then does a depth-first recursion through the structure,
 applying the tranformation functions for all
 data types found in the data structure.
 
-The transform map has data types as keys and
-anonymous functions as values. The anonymous
-functions have the data item and recursion depth list
-as inputs and can return anything.
+The transform map has data types as keys and anonymous functions
+as values. The anonymous functions have the data item and recursion
+depth list as inputs and can return anything. These maps of types
+and functions are referred to as potions.
 
 ## Examples
 
@@ -34,7 +34,12 @@ out any invalid values. The valid keys are all of the standard Protocol types:
 
     [Atom, Integer, Float, BitString, Regexp, PID, Function, Reference, Port, Tuple, List, Map]
 
-plus `Keyword` and the name of any defined Structs (e.g. `Range`)
+plus `Keyword` and the name of any defined Structs (e.g. `Range`).
+
+There is also the special type `Any`, this is the default function applied
+when there is no function for the type listed in the potion. By default
+this is set to the identity function `fn(x, _d) -> x end`, but can be overridden
+in the initial map.
 
 The depth argument should always be left at the default value when using
 this protocol. For the anonymous functions in the potion map, they can use

@@ -29,6 +29,11 @@ defprotocol Transform do
 
   plus `Keyword` and the name of any defined Structs (e.g. Range)
 
+  There is also the special type `Any`, this is the default function applied
+  when there is no function for the type listed in the potion. By default
+  this is set to the identity function `fn(x, _d) -> x end`, but can be overridden
+  in the initial map.
+
   The depth argument should always be left at the default value when using
   this protocol. For the anonymous functions in the potion map, they can use
   the depth list to know which kind of data structure contains the current
@@ -71,7 +76,7 @@ defimpl Transform, for: Atom do
 
   def transform(atom, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Atom, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Atom, potion)
     trans.(atom, depth)
   end
 
@@ -81,7 +86,7 @@ defimpl Transform, for: BitString do
 
   def transform(bitstring, function_map, depth \\ []) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, BitString, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(BitString, potion)
     trans.(bitstring, depth)
   end
 
@@ -91,7 +96,7 @@ defimpl Transform, for: Integer do
 
   def transform(integer, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Integer, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Integer, potion)
     trans.(integer, depth)
   end
 
@@ -101,7 +106,7 @@ defimpl Transform, for: Float do
 
   def transform(float, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Float, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Float, potion)
     trans.(float, depth)
   end
 
@@ -119,13 +124,13 @@ defimpl Transform, for: List do
 
   defp list_transform(list, potion, depth) do
     new_list =  Enum.map(list, fn(l) -> Transform.transform(l, potion, [List | depth]) end)
-    trans =  Map.get(potion, List, fn(x, _d) -> x end )
+    trans =  Transform.Potion.distill(List, potion)
     trans.(new_list, depth)
   end
 
   defp keyword_transform(klist, potion, depth) do
     new_klist = Enum.map(klist, fn({key, value}) -> {key, Transform.transform(value, potion,[Keyword | depth]) } end)
-    trans = Map.get(potion, Keyword, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Keyword, potion)
     trans.(new_klist, depth)
   end
 
@@ -140,7 +145,7 @@ defimpl Transform, for: Tuple do
       |> Enum.map(fn(x) -> Transform.transform(x, potion, [Tuple | depth] ) end)
       |> Enum.to_list
       |> List.to_tuple
-    trans = Map.get(potion, Tuple, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Tuple, potion)
     trans.(new_tuple, depth)
   end
 
@@ -151,7 +156,7 @@ defimpl Transform, for: Map do
   def transform(map, function_map, depth \\0 ) do
     potion = Transform.Potion.brew(function_map, depth)
     new_map =  for {key, val} <- map, into: %{}, do: {key, Transform.transform(val, potion, [Map | depth])}
-    trans = Map.get(potion, Map, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Map, potion)
     trans.(new_map, depth)
   end
 
@@ -161,7 +166,7 @@ defimpl Transform, for: Regex do
 
   def transform(regex, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Regex, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Regex, potion)
     trans.(regex, depth)
   end
 
@@ -171,7 +176,7 @@ defimpl Transform, for: Function do
 
   def transform(function, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Function, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Function, potion)
     trans.(function, depth)
   end
 
@@ -181,7 +186,7 @@ defimpl Transform, for: PID do
 
   def transform(pid, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, PID, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(PID, potion)
     trans.(pid, depth)
   end
 
@@ -191,7 +196,7 @@ defimpl Transform, for: Port do
 
   def transform(port, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Port, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Port, potion)
     trans.(port, depth)
   end
 
@@ -201,7 +206,7 @@ defimpl Transform, for: Reference do
 
   def transform(reference, function_map, depth \\ [] ) do
     potion = Transform.Potion.brew(function_map, depth)
-    trans = Map.get(potion, Reference, fn(x, _d) -> x end )
+    trans = Transform.Potion.distill(Reference, potion)
     trans.(reference, depth)
   end
 
@@ -224,7 +229,7 @@ defimpl Transform, for: Any do
           new_data = Transform.Map.transform(data, new_potion, [struct_name | depth])
           new_struct = struct(struct_name, new_data)
 
-          trans = Map.get(potion, struct_name, fn(x, _d) -> x end)
+          trans = Transform.Potion.distill(struct_name, potion)
           trans.(new_struct, depth)
         else
           Transform.Map.transform(map, potion, depth)

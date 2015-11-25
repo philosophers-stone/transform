@@ -18,7 +18,8 @@ defmodule Transform.Potion do
   the depth list is empty.
   """
   def brew(map, []) when is_map(map) do
-    for {type, func} <- map, validate(type, func) , into: %{} , do: {type, wrap(func, type)}
+    potion = for {type, func} <- map, validate(type, func) , into: %{} , do: {type, wrap(func, type)}
+    Map.put_new(potion, Any, fn(x, _d) -> x end)
   end
 
   def brew(map, depth) when is_map(map) and is_list(depth) do
@@ -47,6 +48,16 @@ defmodule Transform.Potion do
 
   defp arity(func) do
     func |> :erlang.fun_info |> Keyword.get(:arity, -1)
+  end
+
+  @doc """
+  distill extracts the function for a given data type from a potion.
+
+  If the potion does not have a function for a given data type, it
+  returns the function from the `Any` key value.
+  """
+  def distill(type, potion) do
+    Map.get(potion, type, Map.get(potion, Any))
   end
 
 end
