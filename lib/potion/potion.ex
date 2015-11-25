@@ -15,7 +15,7 @@ defmodule Transform.Potion do
   and if it is arity 1, it must be wrapped with arity 2 closure.
 
   This validation only occurs at the top of the transformation tree when
-  the depth array is empty.
+  the depth list is empty.
   """
   def brew(map, []) when is_map(map) do
     for {type, func} <- map, validate(type, func) , into: %{} , do: {type, wrap(func, type)}
