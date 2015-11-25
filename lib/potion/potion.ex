@@ -1,21 +1,21 @@
 defmodule Transform.Potion do
   @moduledoc """
-  This module provides some helper methods for creating maps that 
-  work with the Transform Protocol. 
+  This module provides some helper methods for creating maps that
+  work with the `Transform` Protocol.
 
-  The methods in this module are public, but are not intended to 
-  be used outside of writing a implementation of the Transform Protocol. 
+  The methods in this module that are public are not intended to
+  be used outside of writing a implementation of the `Transform` Protocol.
   """
 
   @doc """
-  brew validates and prepares a map to be used with the `Transform` Protocol. 
+  brew validates and prepares a map to be used with the `Transform` Protocol.
 
-  Every key in the map that is an `Atom` that starts with `Elixir.` must 
+  Every key in the map that is an `Atom` and that starts with `Elixir.` must
   have a function as a value. That function must have either arity 1 or 2
-  and if it is arity 1, it must be wrapped with arity 2 closure. 
+  and if it is arity 1, it must be wrapped with arity 2 closure.
 
   This validation only occurs at the top of the transformation tree when
-  the depth array is empty. 
+  the depth array is empty.
   """
   def brew(map, []) when is_map(map) do
     for {type, func} <- map, validate(type, func) , into: %{} , do: {type, wrap(func, type)}
@@ -27,7 +27,7 @@ defmodule Transform.Potion do
 
   def brew(map, _depth) do
     raise ArgumentError, "#{inspect(map)} is not a map, the second argument to transform must be a map"
-  end 
+  end
 
   defp validate(type, func) when is_function(func) and is_atom(type) do
     String.starts_with? Atom.to_string(type), "Elixir."
@@ -35,7 +35,7 @@ defmodule Transform.Potion do
 
   defp validate(_type, _func) do
     false
-  end 
+  end
 
   defp wrap(func, type) when is_function(func) do
     case arity(func) do
@@ -47,6 +47,6 @@ defmodule Transform.Potion do
 
   defp arity(func) do
     func |> :erlang.fun_info |> Keyword.get(:arity, -1)
-  end 
-  
+  end
+
 end
