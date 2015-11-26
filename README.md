@@ -1,7 +1,8 @@
-# PhStTransform
+PhStTransform
+=============
 
 **A Protocol Implementation for transforming arbitrary Elixir data Structures**
-
+![alt text](https://travis-ci.org/philosophers-stone/transform.svg?branch=master "Travis CI build status")
 ## Documentation
 
 The `PhStTransform` protocol will convert any Elixir data structure
