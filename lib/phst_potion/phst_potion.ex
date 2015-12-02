@@ -30,6 +30,25 @@ defmodule PhStTransform.Potion do
     raise ArgumentError, "#{inspect(map)} is not a map, the second argument to transform must be a map"
   end
 
+
+  @doc """
+  concoct is the version of brew used in transmogrify, it expects functions of either
+  arity 2 or 3 and use a similar wrap function. It also checks for whether any functions
+  need wrapping at every level.
+  """
+  def concoct(map, []) when is_map(map) do
+    potion = for {type, func} <- map, validate(type, func) , into: %{} , do: {type, swrap(func, type)}
+    Map.put_new(potion, Any, fn(x, p, _d) -> {x, p} end)
+  end
+
+  def concoct(map, depth) when is_map(map) and is_list(depth) do
+    for {type, func} <- map, validate(type, func) , into: %{} , do: {type, swrap(func, type)}
+  end
+
+  def concoct(map, _depth) do
+    raise ArgumentError, "#{inspect(map)} is not a map, the second argument to transmogrify must be a map"
+  end
+
   defp validate(type, func) when is_function(func) and is_atom(type) do
     String.starts_with? Atom.to_string(type), "Elixir."
   end
@@ -43,6 +62,14 @@ defmodule PhStTransform.Potion do
       2 -> func
       1 -> fn(x, _d) -> func.(x) end
       _ -> raise ArgumentError, "#{inspect(func)} for key #{inspect(type)} in map must have an arity of either 1 or 2"
+    end
+  end
+
+  defp swrap(func, type) when is_function(func) do
+    case arity(func) do
+      3 -> func
+      2 -> fn(x, p, _d) -> func.(x, p) end
+      _ -> raise ArgumentError, "#{inspect(func)} for key #{inspect(type)} in map must have an arity of either 3 or 2"
     end
   end
 

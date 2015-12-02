@@ -5,8 +5,10 @@ PhStTransform
 ![alt text](https://travis-ci.org/philosophers-stone/transform.svg?branch=master "Travis CI build status")
 ## Documentation
 
-The `PhStTransform` protocol will convert any Elixir data structure
-using a given transform map into a new data structure.
+The `PhStTransform` protocol is a way to create dynamic protocols
+on the fly. It can transform any Elixir data structure by applying
+functions to each specific Elixir data type in the way that makes
+sense for that data type.
 
 The `transform/3` function takes the data structure and
 a map of transformation functions and a depth level. It
@@ -25,6 +27,11 @@ and functions are referred to as potions.
     iex> data = %{:a => [a: :a], :b => {:c, :d}, "f" => [:e, :g]}
     iex> PhStTransform.transform(data, potion)
     %{:a => [a: "a"], :b => {"c", "d"}, "f" => ["e", "g"]}
+
+Note that only the values of any data structure are transformed. If an Atom
+is used as a key, it is not transformed by the Atom function. If we wanted
+to tranform the keys of a data structure, that would be done in the function
+for Keyword or Map, rather than Atom.
 
 ## Using PhStTransform
 
@@ -54,18 +61,27 @@ For example: Capitalize all strings in the `UserName` struct, normalize all othe
 
     PhStTransform.transform(data, user_potion)
 
+There is also an experimental `PhStTransform.transmogrify` function that allows the maps
+to change the potions as the transformation proceeds. This is still a work in progress.
+
 ## Limitations
 
 Clearly there are some transformations that would be difficult or impossible
 to duplicate in a single potion. The tranformations can be easily composed,
 but this has a performance cost in that each `tranform` iterates through
-the entire data structure.
+the entire data structure and applies a transform function to both the
+items in the data structure and the entire data structure itself.
 
 Also, since transforms are implemented as a Protocol, the transforms will be
-relatively slow during development since the Protocol is not consolidated
+relatively slow during development since Protocols are not consolidated
 for development compilations. Protocol consolidation will improve the speed
 in production, but like any general purpose tool, this module emphasizes
 utility over performance.
+
+This module is intended as a quick and easy interface to the benefits of creating
+a Protocol. Once performance becomes an issue, it's straightforward to convert a
+potion to a customized Protocol implementation that can be tuned for the specific
+task.
 
 ## Installation
 
@@ -74,7 +90,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add transform to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:phst_transform, "~> 0.8.1"}]
+          [{:phst_transform, "~> 0.9.0"}]
         end
 
   2. Ensure transform is started before your application:

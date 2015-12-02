@@ -15,6 +15,11 @@ defprotocol PhStTransform do
   return anything. These maps of transform functions
   are refered to as potions.
 
+  The `transmogrify/3` function is similar except that it allows
+  the functions to modify the potion map as the tranform is
+  in progress and it returns a tuple consisting of the
+  transformed data and potion.
+
   ## Example: Convert all atoms to strings
 
       atom_to_string_potion = %{ Atom => fn(atom) -> Atom.to_string(atom) end }
@@ -46,6 +51,24 @@ defprotocol PhStTransform do
 
       PhStTransform.transform(data, user_potion)
 
+
+  ## Example: Parse a list of strings input from a CSV file, into a list of maps.
+
+      csv_potion = %{ BitString => fn(str, potion) ->
+                                      keys = String.split(str, ",")
+                                      new_potion = Map.put(potion, BitString, fn(str, potion) ->
+                                        String.split(str,",")
+                                        |> Enum.zip(keys)
+                                        |> Enum.reduce( %{}, fn(tuple, map) ->
+                                          {k, v} = tuple
+                                          Map.put(map,k,v) end)
+                                        end )
+                                      {keys, new_potion} end
+      }
+
+       csv_strings = File.stream!("file.csv") |> Enum.into([])
+       [keys| maps ] = PhStTranform.transmogrify(csv_strings, csv_potion)
+
   """
 
   # Handle structs in Any
@@ -70,6 +93,21 @@ defprotocol PhStTransform do
   """
   def transform(data_structure, function_map, depth \\ [])
 
+  @doc """
+  Works similarly to transform, but returns a tuple consisting
+  of {result, potion} allowing self modifying potions.
+
+  ## Examples
+
+      iex> atom_first = %{ Atom => fn(atom, potion) ->
+             old = atom
+            { atom, Map.put(potion, Atom, fn(atom, potion) ->
+              {old, potion} end )} end }
+      iex> PhStTransform.transmorgrify([:a, :b, :c, :d], atom_first)
+      {[:a, :a, :a, :a], %{Atom => #Function<12.54118792/2 in :erl_eval.expr/5>} }
+  """
+  def transmogrify(data_structure, function_map, depth \\ [])
+
 end
 
 defimpl PhStTransform, for: Atom do
@@ -80,6 +118,11 @@ defimpl PhStTransform, for: Atom do
     trans.(atom, depth)
   end
 
+  def transmogrify(atom, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Atom, potion)
+    trans.(atom, potion, depth)
+  end
 end
 
 defimpl PhStTransform, for: BitString do
@@ -88,6 +131,12 @@ defimpl PhStTransform, for: BitString do
     potion = PhStTransform.Potion.brew(function_map, depth)
     trans = PhStTransform.Potion.distill(BitString, potion)
     trans.(bitstring, depth)
+  end
+
+  def transmogrify(bitstring, function_map, depth \\ []) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(BitString, potion)
+    trans.(bitstring, potion, depth)
   end
 
 end
@@ -100,6 +149,11 @@ defimpl PhStTransform, for: Integer do
     trans.(integer, depth)
   end
 
+  def transmogrify(integer, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Integer, potion)
+    trans.(integer, potion, depth)
+  end
 end
 
 defimpl PhStTransform, for: Float do
@@ -108,6 +162,12 @@ defimpl PhStTransform, for: Float do
     potion = PhStTransform.Potion.brew(function_map, depth)
     trans = PhStTransform.Potion.distill(Float, potion)
     trans.(float, depth)
+  end
+
+  def transmogrify(float, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Float, potion)
+    trans.(float, potion, depth)
   end
 
 end
@@ -134,6 +194,36 @@ defimpl PhStTransform, for: List do
     trans.(new_klist, depth)
   end
 
+  def transmogrify(list, function_map, depth \\0 ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    case Keyword.keyword?(list) do
+      true -> keyword_transmogrify(list, potion, depth)
+      _ -> list_transmogrify(list, potion, depth)
+    end
+  end
+
+  defp list_transmogrify(list, potion, depth) do
+    new_depth = [List | depth]
+    {new_list, next_potion} = Enum.reduce(list, {[], potion}, fn(item, {l, potion})->
+      {new_item, new_potion} = PhStTransform.transmogrify(item, potion, new_depth)
+      {[new_item | l ], new_potion} end)
+
+
+    trans =  PhStTransform.Potion.distill(List, next_potion)
+    trans.(:lists.reverse(new_list), next_potion, depth)
+  end
+
+  defp keyword_transmogrify(klist, potion, depth) do
+    new_depth = [Keyword | depth]
+    {new_klist, next_potion } = Enum.reduce(klist, {[], potion}, fn({key, value}, {kl, potion}) ->
+      {new_value, new_potion} = PhStTransform.transmogrify(value, potion, new_depth)
+      {[{key, new_value}| kl], new_potion} end)
+
+    trans = PhStTransform.Potion.distill(Keyword, next_potion)
+    trans.(:lists.reverse(new_klist), next_potion, depth)
+  end
+
+
 end
 
 defimpl PhStTransform, for: Tuple do
@@ -143,10 +233,23 @@ defimpl PhStTransform, for: Tuple do
     new_tuple = tuple
       |> Tuple.to_list
       |> Enum.map(fn(x) -> PhStTransform.transform(x, potion, [Tuple | depth] ) end)
-      |> Enum.to_list
       |> List.to_tuple
     trans = PhStTransform.Potion.distill(Tuple, potion)
     trans.(new_tuple, depth)
+  end
+
+  def transmogrify(tuple, function_map, depth \\[]) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    new_depth = [Tuple| depth]
+    {new_tuple_list, next_potion} = tuple
+      |> Tuple.to_list
+      |> Enum.reduce({[], potion}, fn(item, {l, potion})->
+        {new_item, new_potion} = PhStTransform.transmogrify(item, potion, new_depth)
+        {[new_item | l ], new_potion} end)
+
+    new_tuple = List.to_tuple(:lists.reverse(new_tuple_list))
+    trans = PhStTransform.Potion.distill(Tuple, potion)
+    trans.(new_tuple, next_potion, depth)
   end
 
 end
@@ -160,6 +263,18 @@ defimpl PhStTransform, for: Map do
     trans.(new_map, depth)
   end
 
+  def transmogrify(map, function_map, depth \\0 ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    new_depth = [Map | depth]
+
+    {new_map, next_potion} = Enum.reduce(map, {%{}, potion}, fn({key, value}, {bmap, potion}) ->
+      {new_value, new_potion} = PhStTransform.transmogrify(value, potion, new_depth)
+      {Map.put(bmap,key,new_value), new_potion} end)
+
+    trans = PhStTransform.Potion.distill(Map, potion)
+    trans.(new_map, next_potion, depth)
+  end
+
 end
 
 defimpl PhStTransform, for: Regex do
@@ -170,6 +285,11 @@ defimpl PhStTransform, for: Regex do
     trans.(regex, depth)
   end
 
+  def transmogrify(regex, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Regex, potion)
+    trans.(regex, potion, depth)
+  end
 end
 
 defimpl PhStTransform, for: Function do
@@ -178,6 +298,12 @@ defimpl PhStTransform, for: Function do
     potion = PhStTransform.Potion.brew(function_map, depth)
     trans = PhStTransform.Potion.distill(Function, potion)
     trans.(function, depth)
+  end
+
+  def transmogrify(function, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Function, potion)
+    trans.(function, potion, depth)
   end
 
 end
@@ -190,6 +316,12 @@ defimpl PhStTransform, for: PID do
     trans.(pid, depth)
   end
 
+  def transmogrify(pid, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(PID, potion)
+    trans.(pid, potion, depth)
+  end
+
 end
 
 defimpl PhStTransform, for: Port do
@@ -200,6 +332,12 @@ defimpl PhStTransform, for: Port do
     trans.(port, depth)
   end
 
+  def transmogrify(port, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Port, potion)
+    trans.(port, potion, depth)
+  end
+
 end
 
 defimpl PhStTransform, for: Reference do
@@ -208,6 +346,12 @@ defimpl PhStTransform, for: Reference do
     potion = PhStTransform.Potion.brew(function_map, depth)
     trans = PhStTransform.Potion.distill(Reference, potion)
     trans.(reference, depth)
+  end
+
+  def transmogrify(reference, function_map, depth \\ [] ) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    trans = PhStTransform.Potion.distill(Reference, potion)
+    trans.(reference, potion, depth)
   end
 
 end

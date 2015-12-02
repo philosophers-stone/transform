@@ -3,7 +3,7 @@ defmodule PhStTransform.Mixfile do
 
   def project do
     [app: :phst_transform,
-     version: "0.8.1",
+     version: "0.9.0",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,

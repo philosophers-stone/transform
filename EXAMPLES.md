@@ -52,7 +52,7 @@ data structure to JSON.
 
       defp from_any(map) when is_map(map) do
         %{__struct__: struct_name} = map
-        "#{from_atom(struct_name)}:#{from_map(Map.from_struct(map))}"
+        "#{from_map(Map.put(Map.from_struct(map),"struct",to_json(struct_name)))}"
       end
 
       defp from_any(any) do

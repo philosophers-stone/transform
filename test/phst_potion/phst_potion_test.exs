@@ -28,6 +28,31 @@ defmodule PhStTransform.PotionTest do
     assert_raise ArgumentError, fn -> PhStTransform.Potion.brew(potion,[]) end
   end
 
+  test "concoct returns a map with only atoms as keys" do
+    potion = %{ "bar" => 1, Atom => fn(x, p) -> {x, p} end, String => fn(x, p) -> {String.upcase(x), p} end }
+    assert Map.keys(PhStTransform.Potion.concoct(potion,[])) == [Any, Atom, String]
+  end
+
+  test "concoct returns a map with only functions as values" do
+    map = %{ "bar" => 1, Atom => 2, String => fn(x, _d) -> x end}
+    potion = PhStTransform.Potion.concoct(map,[])
+    for {_type, func} <- potion , do: assert is_function(func)
+  end
+
+  test "concoct still validates the map when depth is not []" do
+    potion = %{ "bar" => 1, Atom => 2, String => fn(x, p) -> {x, p} end}
+    assert Map.keys(PhStTransform.Potion.concoct(potion,[List])) == [String]
+  end
+
+  test "concoct raises an ArgumentError when the first arg is not a map" do
+    assert_raise ArgumentError, fn -> PhStTransform.Potion.concoct([a: &String.upcase/1],[List]) end
+  end
+
+  test "concoct raises an ArgumentError when a function has arity < 2 " do
+    potion = %{ Atom => fn(a) -> {a} end}
+    assert_raise ArgumentError, fn -> PhStTransform.Potion.concoct(potion,[]) end
+  end
+
   test "distill returns a function" do
     map = %{ "bar" => 1, Atom => fn(x) -> x end, String => &String.upcase/1 }
     potion =  PhStTransform.Potion.brew(map,[])
