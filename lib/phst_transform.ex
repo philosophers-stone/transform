@@ -57,14 +57,15 @@ defprotocol PhStTransform do
       csv_potion = %{ BitString => fn(str, potion) ->
                                       keys = String.split(str, ",")
                                       new_potion = Map.put(potion, BitString, fn(str, potion) ->
-                                        String.split(str,",")
+                                       { String.split(str,",")
                                         |> Enum.zip(keys)
                                         |> Enum.reduce( %{}, fn(tuple, map) ->
-                                          {k, v} = tuple
-                                          Map.put(map,k,v) end)
+                                          {v, k} = tuple
+                                          Map.put(map,k,v) end),
+                                        potion }
                                         end )
-                                      {keys, new_potion} end
-      }
+                                      {keys, new_potion}
+      end }
 
        csv_strings = File.stream!("file.csv") |> Enum.into([])
        [keys| maps ] = PhStTranform.transmogrify(csv_strings, csv_potion)
@@ -379,7 +380,29 @@ defimpl PhStTransform, for: Any do
           PhStTransform.Map.transform(map, potion, depth)
         end
     end
+  end
 
+  def transmogrify(%{__struct__: struct_name} = map, function_map, depth \\ []) do
+    potion = PhStTransform.Potion.concoct(function_map, depth)
+    try do
+      struct_name.__struct__
+    rescue
+      _ -> PhStTransform.Map.transmogrify(map, potion, depth)
+    else
+      default_struct ->
+        if :maps.keys(default_struct) == :maps.keys(map) do
+          data = Map.from_struct(map)
+          # replace any Map transforms from the potion with the identity map
+          new_potion = Map.put(potion, Map, fn(x, p, _d) -> {x, p} end)
+          { new_data, next_potion } = PhStTransform.Map.transmogrify(data, new_potion, [struct_name | depth])
+          new_struct = struct(struct_name, new_data)
+
+          trans = PhStTransform.Potion.distill(struct_name, potion)
+          trans.(new_struct, next_potion, depth)
+        else
+          PhStTransform.Map.transmogrify(map, potion, depth)
+        end
+    end
   end
 
 end

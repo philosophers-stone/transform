@@ -123,7 +123,7 @@ defmodule PhStTransmogrifyTest do
   end
 
   test "convert range " do
-    potion = %{Range => fn(_r, _d) -> %Range{first: 2, last: 5} end}
+    potion = %{Range => fn(_r, p) -> {%Range{first: 2, last: 5}, p} end}
     assert elem(PhStTransform.transmogrify(1..5, potion), 0) == 2..5
   end
 
@@ -135,10 +135,10 @@ defmodule PhStTransmogrifyTest do
   test "transmogrify quote do output" do
     data = quote do: Enum.map(1..3, fn(x) -> x*x end)
     data_transmogrify = quote do: Enum.map(1..3, fn(y) -> y*y end)
-    replace_x = fn(a, _d ) ->
+    replace_x = fn(a, p, _d) ->
       case a do
-        :x -> :y
-        atom -> atom
+        :x -> {:y, p}
+        atom -> {atom, p}
       end
     end
     potion = %{ Atom => replace_x }
@@ -172,8 +172,8 @@ defmodule PhStTransmogrifyTest do
   end
 
   test "struct transmogrify works when Any is not the default" do
-    potion = %{Range => fn(_r, _d) -> %Range{first: 2, last: 5} end,
-               Any => fn(x, _d) -> if(is_map(x), do: inspect(x), else: x) end }
+    potion = %{Range => fn(_r, p, _d) ->{ %Range{first: 2, last: 5}, p} end,
+               Any => fn(x, p, _d) -> if(is_map(x), do: {inspect(x), p}, else: {x, p}) end }
     assert elem(PhStTransform.transmogrify(1..5, potion), 0) == 2..5
   end
 
