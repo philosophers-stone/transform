@@ -30,6 +30,20 @@ defmodule PhStTransform.Potion do
     raise ArgumentError, "#{inspect(map)} is not a map, the second argument to transform must be a map"
   end
 
+  @doc """
+  brewify converts a potion from transmogrify form into one compatible with transform.
+
+  The idea is to use transmogrify to build a potion that can be used in transforms.
+  """
+  def brewify(map) do
+    for {type, func} <- map,validate(type, func), into: %{} , do: {type, concoct_to_brew(func, map)}
+  end
+
+  # We assume func has arity3
+  defp concoct_to_brew(func, map) do
+    fn(x, d) -> {value, _potion} = func.(x, map, d)
+                value end
+  end
 
   @doc """
   concoct is the version of brew used in transmogrify, it expects functions of either
