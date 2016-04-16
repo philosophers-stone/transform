@@ -36,15 +36,13 @@ defmodule PhStTransform.Potion do
   The idea is to use transmogrify to build a potion that can be used in transforms.
   """
   def brewify(map) do
-    for {type, func} <- map, validate(type, func), into: %{} , do: {type, concoct_to_brew(func, map)}
+    for {type, func} <- map,validate(type, func), into: %{} , do: {type, concoct_to_brew(func, map)}
   end
 
   # We assume func has arity3
   defp concoct_to_brew(func, map) do
-    fn(x, d) ->
-      {value, _potion} = func.(x, map, d)
-      value
-    end
+    fn(x, d) -> {value, _potion} = func.(x, map, d)
+                value end
   end
 
   @doc """

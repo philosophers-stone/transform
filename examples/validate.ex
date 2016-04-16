@@ -7,13 +7,14 @@ defmodule Validate do
                      }
 
    {_, validator } = transmogrify(data, valid_potion)
-   PhStTransform.Potion.brewify(validator)
+   validator
   end
+
 
   defp from_atom(atom, potion, depth) do
     atom_f = PhStTransform.Potion.distill(Atom, potion)
     new_atom_f = fn
-        (a, p, depth) -> { true, p }
+        (a, p, depth) -> true
         (a, p, d) -> atom_f.(a, p, d)
       end
     new_potion = Map.put(potion, Atom, new_atom_f )
