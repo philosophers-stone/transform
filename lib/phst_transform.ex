@@ -68,7 +68,7 @@ defprotocol PhStTransform do
       end }
 
        csv_strings = File.stream!("file.csv") |> Enum.into([])
-       [keys| maps ] = PhStTranform.transmogrify(csv_strings, csv_potion)
+       {[keys | maps ], new_potion } = PhStTranform.transmogrify(csv_strings, csv_potion)
 
   """
 
