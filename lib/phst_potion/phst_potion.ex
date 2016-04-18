@@ -4,7 +4,8 @@ defmodule PhStTransform.Potion do
   work with the `PhStTransform` Protocol.
 
   The methods in this module that are public are not intended to
-  be used outside of writing a implementation of the `PhStTransform` Protocol.
+  be used outside of writing a implementation of the `PhStTransform` Protocol
+  or a PhStTransform map function.
   """
 
   @doc """
