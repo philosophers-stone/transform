@@ -21,7 +21,7 @@ defmodule Validate do
   defp from_atom(_atom, potion, depth) do
     atom_f = PhStTransform.Potion.distill(Atom, potion)
     new_atom_f = fn
-        (a, p, ^depth) -> {true, potion}
+        (_a, p, ^depth) -> {true, p}
         (a, p, d) -> atom_f.(a, p, d)
       end
     new_potion = Map.put(potion, Atom, new_atom_f )
@@ -31,7 +31,7 @@ defmodule Validate do
   defp from_integer(_integer, potion, depth) do
     integer_f = PhStTransform.Potion.distill(Integer, potion)
     new_integer_f = fn
-        (i, p, ^depth) -> {true, p}
+        (_i, p, ^depth) -> {true, p}
         (i, p, d) -> integer_f.(i, p, d)
       end
     new_potion = Map.put(potion, Integer, new_integer_f )
@@ -41,7 +41,7 @@ defmodule Validate do
   defp from_float(_float, potion, depth) do
     float_f = PhStTransform.Potion.distill(Float, potion)
     new_float_f = fn
-        (f, p, ^depth) -> {true, p}
+        (_f, p, ^depth) -> {true, p}
         (f, p, d) -> float_f.(f, p, d)
       end
     new_potion = Map.put(potion, Float, new_float_f )
@@ -51,7 +51,7 @@ defmodule Validate do
   defp from_bitstring(_bitstring, potion, depth) do
     bitstring_f = PhStTransform.Potion.distill(BitString, potion)
     new_bitstring_f = fn
-        (b, p, ^depth) -> {true, p}
+        (_b, p, ^depth) -> {true, p}
         (b, p, d) -> bitstring_f.(b, p, d)
       end
     new_potion = Map.put(potion, BitString, new_bitstring_f )
