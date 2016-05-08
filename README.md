@@ -3,6 +3,14 @@ PhStTransform
 
 **A Protocol Implementation for transforming arbitrary Elixir data Structures**
 ![alt text](https://travis-ci.org/philosophers-stone/transform.svg?branch=master "Travis CI build status")
+
+## Motivation
+
+A lot of Elixir coding is about reaching into large data structures,
+bringing a piece out to your function and then reassembling the structure.
+This library is an attempt to turn that model on it's head and use Protocols
+to bring the function into the data structure.
+
 ## Documentation
 
 The `PhStTransform` protocol is a way to create dynamic protocols
