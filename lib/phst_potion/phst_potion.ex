@@ -88,6 +88,7 @@ defmodule PhStTransform.Potion do
     end
   end
 
+  # from slack You can use is_function(fun, arity) in guards
   defp arity(func) do
     func |> :erlang.fun_info |> Keyword.get(:arity, -1)
   end
