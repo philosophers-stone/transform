@@ -35,7 +35,7 @@ defmodule PhStTransformTest do
 
   test "convert Float to string" do
     potion = %{ Float => fn(x, _d) -> Float.to_string(x) end}
-    assert PhStTransform.transform(5.0, potion) == "5.00000000000000000000e+00"
+    assert PhStTransform.transform(5.0, potion) == "5.0"
   end
 
 

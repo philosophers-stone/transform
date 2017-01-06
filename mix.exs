@@ -7,15 +7,15 @@ defmodule PhStTransform.Mixfile do
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps,
+     deps: deps(),
 
      # Ex_doc
      docs: [logo: "examples/phst_svg.png",
           extras: ["README.md", "EXAMPLES.md"]],
 
      # Hex
-     package: hex_package,
-     description: description
+     package: hex_package(),
+     description: description()
 
      ]
   end
