@@ -69,8 +69,9 @@ For example: Capitalize all strings in the `UserName` struct, normalize all othe
 
     PhStTransform.transform(data, user_potion)
 
-There is also an experimental `PhStTransform.transmogrify` function that allows the maps
-to change the potions as the transformation proceeds. This is still a work in progress.
+There is also the `PhStTransform.transmogrify` function that allows the maps
+to change the potions as the transformation proceeds. See the simplistic csv
+parser in the tests for an example of it's usage.
 
 ## Limitations
 
@@ -98,7 +99,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
   1. Add transform to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:phst_transform, "~> 0.9.0"}]
+          [{:phst_transform, "~> 1.0.0"}]
         end
 
   2. Ensure transform is started before your application:
