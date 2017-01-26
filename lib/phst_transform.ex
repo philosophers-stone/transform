@@ -175,7 +175,7 @@ end
 
 defimpl PhStTransform, for: List do
 
-  def transform(list, function_map, depth \\0 ) do
+  def transform(list, function_map, depth \\ [] ) do
     potion = PhStTransform.Potion.brew(function_map, depth)
     case Keyword.keyword?(list) do
       true -> keyword_transform(list, potion, depth)
@@ -195,7 +195,7 @@ defimpl PhStTransform, for: List do
     trans.(new_klist, depth)
   end
 
-  def transmogrify(list, function_map, depth \\0 ) do
+  def transmogrify(list, function_map, depth \\ []) do
     potion = PhStTransform.Potion.concoct(function_map, depth)
     case Keyword.keyword?(list) do
       true -> keyword_transmogrify(list, potion, depth)

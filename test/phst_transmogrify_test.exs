@@ -35,7 +35,7 @@ defmodule PhStTransmogrifyTest do
 
   test "convert Float to string" do
     potion = %{ Float => fn(x, p) -> {Float.to_string(x), p} end}
-    assert elem(PhStTransform.transmogrify(5.0, potion), 0 ) == "5.0"
+    assert elem(PhStTransform.transmogrify(5.0, potion), 0 ) |> String.starts_with?("5.0")
   end
 
 
