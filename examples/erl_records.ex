@@ -1,6 +1,18 @@
 defmodule ErlRecords do
   @moduledoc """
   Helper functions for converting nested Erlang Record structures to Keyword lists.
+
+  iex> data = :inet_res.resolve( 'google.com', :in, :a )
+  iex> fields = Record.extract_all(from_lib: "kernel/src/inet_dns.hrl")
+  iex> ErlRecords.to_keyword(data, fields)
+  {:ok,
+ [header: [id: 1, qr: true, opcode: :query, aa: false, tc: false, rd: true,
+   ra: true, pr: false, rcode: 0],
+  qdlist: [[domain: 'google.com', type: :a, class: :in]],
+  anlist: [[domain: 'google.com', type: :a, class: :in, cnt: 0, ttl: 269,
+    data: {216, 58, 194, 174}, tm: :undefined, bm: [], func: false]],
+  nslist: [], arlist: []]}
+  
   """
 
   import PhStTransform
