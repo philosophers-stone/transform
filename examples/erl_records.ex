@@ -45,16 +45,27 @@ defmodule ErlRecords do
 # , [], []}
 
 
-  def to_keyword(tuple, rec_fields_list) do
+  def record_to_keyword(tuple, rec_fields_list) do
     [rec_type | fields] = Tuple.to_list(tuple)
 
-    rec_fields_list
-    |> Keyword.get(rec_type)
-    |> Enum.zip(fields)
-    |>  Enum.map( fn {{field, _default},value} -> {field, value} end )
-
+    case is_atom(rec_type) do
+      true -> case Keyword.get(rec_fields_list, rec_type) do
+                nil -> tuple
+                type_list ->  Enum.zip(type_list, fields)
+                    |>  Enum.map( fn {{field, _default},value} -> {field, value} end )
+              end
+      _ -> tuple
+    end
   end
 
+  @doc """
+  Takes any arbitrary Elixir data structure and the results of Record.extract_all(1)
+  and replaces any Erlang records found in the data with keyword maps.
+  """
+  def to_keyword(data, rec_fields_list) do
+    keyword_potion = %{ Tuple => fn(tuple) -> record_to_keyword(tuple, rec_fields_list) end}
+    transform(data, keyword_potion)
+  end
 
 
 end
